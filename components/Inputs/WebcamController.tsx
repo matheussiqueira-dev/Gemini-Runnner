@@ -6,6 +6,34 @@ import { GameStatus } from '../../types';
 
 const JUMP_THRESHOLD = 0.24;
 const JUMP_COOLDOWN_MS = 450;
+const WASM_FILES_URL = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm';
+const HAND_MODEL_PATH = '/models/hand_landmarker.task';
+
+const resolveCameraErrorMessage = (error: unknown) => {
+  if (error instanceof DOMException) {
+    if (error.name === 'NotAllowedError') {
+      return 'Permissao de camera negada. Habilite para usar controle por maos.';
+    }
+
+    if (error.name === 'NotFoundError') {
+      return 'Nenhuma camera foi encontrada neste dispositivo.';
+    }
+
+    if (error.name === 'NotReadableError') {
+      return 'A camera esta em uso por outro app. Feche-o e tente novamente.';
+    }
+
+    if (error.name === 'OverconstrainedError') {
+      return 'Nao foi possivel aplicar as configuracoes da camera.';
+    }
+
+    if (error.name === 'SecurityError') {
+      return 'Controle por camera requer HTTPS ou localhost.';
+    }
+  }
+
+  return 'Nao foi possivel ativar a camera. Tente novamente.';
+};
 
 export const WebcamController: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -18,6 +46,7 @@ export const WebcamController: React.FC = () => {
 
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   const status = useStore((state) => state.status);
@@ -32,18 +61,25 @@ export const WebcamController: React.FC = () => {
 
     const init = async () => {
       try {
-        const vision = await FilesetResolver.forVisionTasks(
-          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm',
-        );
+        const vision = await FilesetResolver.forVisionTasks(WASM_FILES_URL);
 
-        const handLandmarker = await HandLandmarker.createFromOptions(vision, {
-          baseOptions: {
-            modelAssetPath: '/models/hand_landmarker.task',
-            delegate: 'GPU',
-          },
-          runningMode: 'VIDEO',
-          numHands: 1,
-        });
+        const createWithDelegate = (delegate: 'GPU' | 'CPU') =>
+          HandLandmarker.createFromOptions(vision, {
+            baseOptions: {
+              modelAssetPath: HAND_MODEL_PATH,
+              delegate,
+            },
+            runningMode: 'VIDEO',
+            numHands: 1,
+          });
+
+        let handLandmarker: HandLandmarker;
+        try {
+          handLandmarker = await createWithDelegate('GPU');
+        } catch (gpuError) {
+          console.warn('GPU delegate unavailable, falling back to CPU:', gpuError);
+          handLandmarker = await createWithDelegate('CPU');
+        }
 
         if (!active) {
           handLandmarker.close();
@@ -52,9 +88,16 @@ export const WebcamController: React.FC = () => {
 
         handLandmarkerRef.current = handLandmarker;
         setIsLoaded(true);
+        setCameraError(null);
       } catch (error) {
         console.error('Failed to initialize hand tracking:', error);
-        setCameraError('Nao foi possivel iniciar o rastreamento de maos.');
+        setCameraError(
+          'Nao foi possivel iniciar o rastreamento de maos. Verifique conexao e suporte do navegador.',
+        );
+      } finally {
+        if (active) {
+          setIsInitializing(false);
+        }
       }
     };
 
@@ -66,12 +109,18 @@ export const WebcamController: React.FC = () => {
   }, []);
 
   const stopStream = () => {
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+      requestRef.current = 0;
+    }
+
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
 
     if (videoRef.current) {
+      videoRef.current.onloadedmetadata = null;
       videoRef.current.srcObject = null;
     }
 
@@ -128,6 +177,9 @@ export const WebcamController: React.FC = () => {
     links.forEach(([start, end]) => {
       const p1 = landmarks[start];
       const p2 = landmarks[end];
+      if (!p1 || !p2) {
+        return;
+      }
       ctx.moveTo(p1.x * width, p1.y * height);
       ctx.lineTo(p2.x * width, p2.y * height);
     });
@@ -174,10 +226,16 @@ export const WebcamController: React.FC = () => {
 
         if (results.landmarks?.length) {
           const hand = results.landmarks[0] as { x: number; y: number }[];
+          const indexTip = hand[8];
+          if (!indexTip) {
+            requestRef.current = requestAnimationFrame(predict);
+            return;
+          }
+
           drawSkeleton(ctx, hand, canvas.width, canvas.height);
 
-          const fingerX = hand[8].x;
-          const fingerY = hand[8].y;
+          const fingerX = indexTip.x;
+          const fingerY = indexTip.y;
 
           setTargetLane(mapFingerToLane(fingerX));
 
@@ -195,6 +253,17 @@ export const WebcamController: React.FC = () => {
 
   const enableCam = async () => {
     if (!handLandmarkerRef.current) {
+      setCameraError('Rastreamento de maos ainda nao foi inicializado.');
+      return;
+    }
+
+    if (!window.isSecureContext) {
+      setCameraError('Controle por camera requer HTTPS ou localhost.');
+      return;
+    }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError('Seu navegador nao suporta acesso a camera.');
       return;
     }
 
@@ -205,19 +274,27 @@ export const WebcamController: React.FC = () => {
       streamRef.current = stream;
 
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadeddata = () => {
+        const video = videoRef.current;
+        video.srcObject = stream;
+        video.onloadedmetadata = async () => {
+          try {
+            await video.play();
+          } catch (playError) {
+            console.warn('Video autoplay fallback failed:', playError);
+          }
+
           if (requestRef.current) {
             cancelAnimationFrame(requestRef.current);
           }
-          predict();
+          lastVideoTimeRef.current = -1;
+          requestRef.current = requestAnimationFrame(predict);
         };
       }
 
       setPermissionGranted(true);
     } catch (error) {
       console.error('Camera permission denied:', error);
-      setCameraError('Permissao de camera negada. Habilite para usar controle por maos.');
+      setCameraError(resolveCameraErrorMessage(error));
     }
   };
 
@@ -236,10 +313,6 @@ export const WebcamController: React.FC = () => {
 
   useEffect(() => {
     return () => {
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
-      }
-
       stopStream();
 
       if (handLandmarkerRef.current) {
@@ -249,10 +322,6 @@ export const WebcamController: React.FC = () => {
     };
   }, []);
 
-  if (!isLoaded) {
-    return null;
-  }
-
   return (
     <div
       className="cam-overlay"
@@ -261,7 +330,9 @@ export const WebcamController: React.FC = () => {
         pointerEvents: isGameActive ? 'auto' : 'none',
       }}
     >
-      {!permissionGranted && isGameActive && (
+      {isInitializing && isGameActive && <p className="cam-error">Inicializando camera...</p>}
+
+      {!permissionGranted && isGameActive && isLoaded && (
         <button type="button" onClick={enableCam} className="btn btn-secondary cam-button">
           <Camera size={16} /> Ativar controle por maos
         </button>
