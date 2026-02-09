@@ -1,0 +1,55 @@
+<svg width="1440" height="810" viewBox="0 0 1440 810" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="160" y1="60" x2="1320" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#091027" />
+      <stop offset="0.55" stop-color="#0B132F" />
+      <stop offset="1" stop-color="#050913" />
+    </linearGradient>
+    <linearGradient id="runway" x1="720" y1="280" x2="720" y2="780" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2E2048" stop-opacity="0.3" />
+      <stop offset="1" stop-color="#15DDF0" stop-opacity="0.15" />
+    </linearGradient>
+    <linearGradient id="button" x1="515" y1="130" x2="925" y2="130" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#29E4D6" />
+      <stop offset="1" stop-color="#5EDBFF" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1440" height="810" fill="url(#bg)" />
+
+  <circle cx="210" cy="130" r="220" fill="#1EC6E6" fill-opacity="0.12" />
+  <circle cx="1270" cy="660" r="270" fill="#FF58C8" fill-opacity="0.12" />
+
+  <rect x="120" y="70" width="1200" height="670" rx="28" fill="#0C1430" fill-opacity="0.78" stroke="#5A7FCB" stroke-opacity="0.45" />
+
+  <path d="M370 710L670 280H770L1070 710H370Z" fill="url(#runway)" stroke="#5EEFFF" stroke-opacity="0.35" />
+
+  <line x1="720" y1="292" x2="720" y2="700" stroke="#79F6FF" stroke-opacity="0.55" stroke-width="2" stroke-dasharray="10 16" />
+  <line x1="630" y1="410" x2="630" y2="710" stroke="#79F6FF" stroke-opacity="0.3" />
+  <line x1="810" y1="410" x2="810" y2="710" stroke="#79F6FF" stroke-opacity="0.3" />
+
+  <rect x="180" y="110" width="280" height="96" rx="16" fill="#0E1B3F" stroke="#6C8BD6" stroke-opacity="0.5" />
+  <text x="206" y="150" fill="#99B4EB" font-size="22" font-family="Rajdhani, Arial, sans-serif">SCORE</text>
+  <text x="206" y="186" fill="#EAF0FF" font-size="36" font-family="Orbitron, Arial, sans-serif">12,540</text>
+
+  <rect x="980" y="110" width="280" height="96" rx="16" fill="#0E1B3F" stroke="#6C8BD6" stroke-opacity="0.5" />
+  <text x="1010" y="152" fill="#99B4EB" font-size="22" font-family="Rajdhani, Arial, sans-serif">LIVES</text>
+  <text x="1010" y="188" fill="#FF739B" font-size="34" font-family="Orbitron, Arial, sans-serif">❤ ❤ ❤</text>
+
+  <rect x="515" y="96" width="410" height="68" rx="34" fill="#111D41" stroke="#7FEFFF" stroke-opacity="0.6" />
+  <text x="646" y="139" fill="#DDF5FF" font-size="24" font-family="Orbitron, Arial, sans-serif">NIVEL 2 / 3</text>
+
+  <rect x="515" y="580" width="410" height="72" rx="36" fill="url(#button)" />
+  <text x="604" y="626" fill="#031118" font-size="24" font-family="Orbitron, Arial, sans-serif">INICIAR CORRIDA</text>
+
+  <rect x="200" y="610" width="300" height="96" rx="18" fill="#0D1838" stroke="#5977BC" stroke-opacity="0.4" />
+  <text x="224" y="645" fill="#8FA9DD" font-size="20" font-family="Rajdhani, Arial, sans-serif">MODO CAMERA</text>
+  <text x="224" y="680" fill="#D8F6FF" font-size="24" font-family="Orbitron, Arial, sans-serif">ATIVO</text>
+
+  <rect x="940" y="610" width="300" height="96" rx="18" fill="#0D1838" stroke="#5977BC" stroke-opacity="0.4" />
+  <text x="964" y="645" fill="#8FA9DD" font-size="20" font-family="Rajdhani, Arial, sans-serif">VELOCIDADE</text>
+  <text x="964" y="680" fill="#FFE79B" font-size="24" font-family="Orbitron, Arial, sans-serif">146%</text>
+
+  <text x="418" y="260" fill="#87F3FF" font-size="44" font-family="Orbitron, Arial, sans-serif">NEON ORBIT RUNNER</text>
+  <text x="448" y="305" fill="#94A8D8" font-size="22" font-family="Rajdhani, Arial, sans-serif">Preview visual da interface do jogo</text>
+</svg>

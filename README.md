@@ -2,6 +2,10 @@
 
 Runner 3D em React + Three.js com controle por teclado, toque e gestos de mao via camera.
 
+## Preview
+
+![Screenshot da interface](./docs/screenshot.svg)
+
 ## Visao geral
 
 O projeto entrega uma experiencia arcade de alta velocidade com foco em:
