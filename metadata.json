@@ -1,0 +1,7 @@
+{
+  "name": "Neon Orbit Runner",
+  "description": "Runner 3D synthwave com controle por teclado, toque e camera.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
