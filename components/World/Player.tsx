@@ -164,7 +164,7 @@ export const Player: React.FC = () => {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [status, laneCount, currentLane, hasDoubleJump, activateImmortality, setTargetLane, globalTriggerJump]);
+  }, [status, currentLane, activateImmortality, setTargetLane, globalTriggerJump]);
 
   // --- Animation Loop ---
   useFrame((state, delta) => {

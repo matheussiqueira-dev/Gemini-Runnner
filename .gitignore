@@ -12,6 +12,10 @@ dist
 dist-ssr
 coverage
 *.local
+docs/gameplay-frames/
+docs/palette.png
+docs/debug-page.html
+docs/debug-page.png
 
 # Editor directories and files
 .vscode/*

@@ -2,6 +2,10 @@
 
 Runner 3D em React + Three.js com controle por teclado, toque e gestos de mao via camera.
 
+## Gameplay (GIF real)
+
+![Gameplay real](./docs/gameplay.gif)
+
 ## Preview
 
 ![Screenshot da interface](./docs/screenshot.svg)
